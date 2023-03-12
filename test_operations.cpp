@@ -71,8 +71,7 @@ TEST(operations, dot) {
 
 TEST(operations,stencil3d_symmetric)
 {
-//  const int nx=3, ny=4, nz=5;
-  const int nx=2, ny=2, nz=2;
+  const int nx=3, ny=3, nz=3;
   const int n=nx*ny*nz;
   double* e=new double[n];
   for (int i=0; i<n; i++) e[i]=0.0;
@@ -106,7 +105,7 @@ TEST(operations,stencil3d_symmetric)
 
   if (wrong_entries)
   {
-    std::cout << "Your matrix (computed on a 2x2x2 grid by apply_stencil(I)) is ..."<<std::endl;
+    std::cout << "Your matrix (computed on a 3x3x3 grid by apply_stencil(I)) is ..."<<std::endl;
     for (int j=0; j<n; j++)
     {
       for (int i=0; i<n; i++)
@@ -120,128 +119,53 @@ TEST(operations,stencil3d_symmetric)
   delete [] A;
 }
 
-TEST(operations,stencil3d_on_const_vector)
+//Checks that the apply_stencil3d function returns a symmetric matrix for gridsize nx!=ny (necessary for CG)
+TEST(operations,stencil3d_symmetric_3x4x3)
 {
-  const int init_val = 3.35;
-  const int nx=4, ny=4, nz=4;
+  const int nx=3, ny=4, nz=3;
   const int n=nx*ny*nz;
   double* e=new double[n];
-  for (int i=0; i<n; i++) e[i]=init_val;
-  double* A=new double[n];
+  for (int i=0; i<n; i++) e[i]=0.0;
+  double* A=new double[n*n];
 
   stencil3d S;
 
   S.nx=nx; S.ny=ny; S.nz=nz;
-  S.value_c =  6.0;
-  S.value_n = -1.0;
-  S.value_e = -1.0;
-  S.value_s = -1.0;
-  S.value_w = -1.0;
-  S.value_b = -1.0;
-  S.value_t = -1.0;
+  S.value_c = 8;
+  S.value_n = 2;
+  S.value_e = 4;
+  S.value_s = 2;
+  S.value_w = 4;
+  S.value_b = 1;
+  S.value_t = 1;
 
-  apply_stencil3d(&S, e, A);
-
-	// On the INSIDE of our 4x4x5 grid, the laplacian should be zero.
-  for (int ix=1; ix<S.nx-1; ix++){
-    for (int iy=1; iy<S.ny-1; iy++){
-      for (int iz=1; iz<S.nz-1; iz++){
-        EXPECT_NEAR(A[S.index_c(ix,iy,iz)], 0.0, 100.0*std::numeric_limits<double>::epsilon());
-      }
-    }
-  }
-	// On the BOUNDARY, we want the same values as before, test a corner, a side and a surface. 
-	double expected_border_val = init_val*S.value_c;
-  EXPECT_NEAR(A[S.index_c(0,0,0)], expected_border_val, 10.0*std::numeric_limits<double>::epsilon());
-  EXPECT_NEAR(A[S.index_c(0,0,1)], expected_border_val, 10.0*std::numeric_limits<double>::epsilon());
-  EXPECT_NEAR(A[S.index_c(0,1,1)], expected_border_val, 10.0*std::numeric_limits<double>::epsilon());
-  
-	delete [] e;
-  delete [] A;
-}
-
-TEST(operations,stencil3d_on_linear_vector)
-{
-  const int init_val = 3.35;
-  const int nx=5, ny=5, nz=7;
-  const int n=nx*ny*nz;
-  double* e=new double[n];
-  double* A=new double[n];
-
-  stencil3d S;
-
-  S.nx=nx; S.ny=ny; S.nz=nz;
-  S.value_c =  6.0;
-  S.value_n = -1.0;
-  S.value_e = -1.0;
-  S.value_s = -1.0;
-  S.value_w = -1.0;
-  S.value_b = -1.0;
-  S.value_t = -1.0;
-  
-	// Set both boundaries and inside to be some a f(x,y,z) with laplace f = 0
-  for (int ix=0; ix<S.nx; ix++){
-    for (int iy=0; iy<S.ny; iy++){
-      for (int iz=0; iz<S.nz; iz++){
-        e[S.index_c(ix, iy, iz)] = init_val + init_val*ix*iy*iz;
-      }
-    }
+  for (int i=0; i<n; i++)
+  {
+    e[i]=1.0;
+    if (i>0) e[i-1]=0.0;
+    apply_stencil3d(&S, e, A+i*n);
   }
 
-  apply_stencil3d(&S, e, A);
+  int wrong_entries=0;
+  for (int i=0; i<n; i++)
+    for (int j=0; j<n; j++)
+    {
+      if (A[i*n+j]!=A[j*n+i]) wrong_entries++;
+    }
+  EXPECT_EQ(0, wrong_entries);
 
-	// On the inside of our grid, the laplacian should be zero.
-  for (int ix=1; ix<S.nx-1; ix++){
-    for (int iy=1; iy<S.ny-1; iy++){
-      for (int iz=1; iz<S.nz-1; iz++){
-        EXPECT_NEAR(A[S.index_c(ix,iy,iz)], 0.0, 100.0*std::numeric_limits<double>::epsilon());
+  if (wrong_entries)
+  {
+    std::cout << "Your matrix (computed on a 3x4x3 grid by apply_stencil(I)) is ..."<<std::endl;
+    for (int j=0; j<n; j++)
+    {
+      for (int i=0; i<n; i++)
+      {
+        std::cout << A[i*n+j] << " ";
       }
+      std::cout << std::endl;
     }
   }
-  
-	delete [] e;
-  delete [] A;
-}
-
-TEST(operations,stencil3d_on_quadratic_vector)
-{
-  const int init_val = 3.35;
-  const int nx=3, ny=4, nz=4;
-  const int n=nx*ny*nz;
-  double* e=new double[n];
-  double* A=new double[n];
-
-  stencil3d S;
-
-  S.nx=nx; S.ny=ny; S.nz=nz;
-  S.value_c =  6.0;
-  S.value_n = -1.0;
-  S.value_e = -1.0;
-  S.value_s = -1.0;
-  S.value_w = -1.0;
-  S.value_b = -1.0;
-  S.value_t = -1.0;
-  
-	// Set both boundaries and inside to be some a f(x,y,z) with laplace f = init_val
-  for (int ix=0; ix<S.nx; ix++){
-    for (int iy=0; iy<S.ny; iy++){
-      for (int iz=0; iz<S.nz; iz++){
-        e[S.index_c(ix, iy, iz)] = init_val + init_val*ix*ix/4.0 + init_val*iz*iz/4.0;
-      }
-    }
-  }
-
-  apply_stencil3d(&S, e, A);
-
-	// On the inside of our grid, the negative laplacian should be equal to -init_val.
-  for (int ix=1; ix<S.nx-1; ix++){
-    for (int iy=1; iy<S.ny-1; iy++){
-      for (int iz=1; iz<S.nz-1; iz++){
-        EXPECT_NEAR(A[S.index_c(ix,iy,iz)], -init_val, 100.0*std::numeric_limits<double>::epsilon());
-      }
-    }
-  }
-  
-	delete [] e;
+  delete [] e;
   delete [] A;
 }

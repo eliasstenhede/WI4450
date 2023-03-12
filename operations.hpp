@@ -22,13 +22,13 @@ void axpby(int n, double a, double const* x, double b, double* y);
 
 // struct to represent a 3D 7-point stencil:
 //
-//          T  N
+//          B  N
 //          | /
 //          |/
 //      W---C---E
 //         /|
 //        / |
-//       S  B
+//       S  T
 //
 //   _ 
 // ^ /y
@@ -77,6 +77,5 @@ typedef struct stencil3d
 
 
 //! apply a 7-point stencil to a vector, v = op*x
-void apply_stencil3d(stencil3d const* op,
-        double const* u, double* v);
+void apply_stencil3d(stencil3d const* op, double const* u, double* v);
 
