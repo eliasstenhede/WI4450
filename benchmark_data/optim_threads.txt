@@ -1,0 +1,7 @@
+100 iterations with 512^3 grid, i.e 
+
+32 threads: 30.0551 s
+28 threads: 30.1040 s
+24 threads: 35.7372 s
+20 threads: 36.0329 s
+16 threads: 42.4616 s
