@@ -13,12 +13,16 @@
 // somewhere in an object file, otherwise you
 // will get linker errors (undefined reference)
 std::map<std::string, int> Timer::counts_;
+std::map<std::string, double> Timer::flops_;
+std::map<std::string, double> Timer::bytes_;
 std::map<std::string, double> Timer::times_;
 
-  Timer::Timer(std::string label)
+  Timer::Timer(std::string label, double flops, double bytes)
   : label_(label)
   {
     t_start_ = omp_get_wtime();
+    flops_[label_] = flops;
+    bytes_[label_] = bytes;
   }
 
 
@@ -31,13 +35,22 @@ std::map<std::string, double> Timer::times_;
 
 void Timer::summarize(std::ostream& os)
 {
-  os << "==================== TIMER SUMMARY =========================================" << std::endl;
-  os << "label               \tcalls     \ttotal time\tmean time "<<std::endl;
-  os << "----------------------------------------------" << std::endl;
+  os << "==================== TIMER SUMMARY ==============================================================" << std::endl;
+  os << "         label         calls    total time     mean time     intensity       Gflop/s      Gbyte/s" << std::endl;
+  os << "-------------------------------------------------------------------------------------------------" << std::endl;
   for (auto [label, time]: times_)
   {
     int count = counts_[label];
-    std::cout << std::setw(20) << label << "\t" << std::setw(10) << count << "\t" << std::setw(10) << time << "\t" << std::setw(10) << time/double(count) << std::endl;
+    float gflops = flops_[label];
+    float gbytes = bytes_[label];
+    std::cout << std::setw(14) << label;
+		std::cout << std::setw(14) << count;
+		std::cout << std::setw(14) << time;
+		std::cout << std::setw(14) << time/double(count);
+		std::cout << std::setw(14) << gflops;
+		std::cout << std::setw(14) << gflops/time*double(count);
+		std::cout << std::setw(13) << gbytes/time*double(count);
+		std::cout << std::endl;
   }
-  os << "============================================================================" << std::endl;
+  os << "=================================================================================================" << std::endl;
 }

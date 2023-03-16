@@ -3,9 +3,9 @@
 #include <omp.h>
 
 //Initialize x with constant value
-void init(int n, double* x, double value)
+void init(long n, double* x, double value)
 {
-	Timer t("init");
+	Timer t("init", 0/1e9, n*8/1e9);
 #pragma omp for schedule(static)
   for (int ix=0; ix<n; ix++) {
     x[ix] = value;
@@ -13,9 +13,9 @@ void init(int n, double* x, double value)
   return;
 }
 
-double dot(int n, double const* x, double const* y)
+double dot(long n, double const* x, double const* y)
 {
-	Timer t("dot");
+	Timer t("dot", 2*n/1e9, 8*2*n/1e9); //Assuming no fused multiply add, we read x and y
   double dot_result = 0.0;
 #pragma omp parallel for schedule(static) reduction(+:dot_result)
   for (int ix=0; ix<n; ix++) {
@@ -25,9 +25,9 @@ double dot(int n, double const* x, double const* y)
 }
 
 //y = a*x+b*y
-void axpby(int n, double a, double const* x, double b, double* y)
+void axpby(long n, double a, double const* x, double b, double* y)
 {
-	Timer t("axpby");
+	Timer t("axpby", 3*n/1e9, 8*3*n/1e9); //Assuming no fused multiply add, we read x, y and write to y
 #pragma omp parallel for schedule(static)
   for (int ix=0; ix<n; ix++) {
     y[ix] = a*x[ix]+b*y[ix];
@@ -38,10 +38,11 @@ void axpby(int n, double a, double const* x, double b, double* y)
 //Apply a 7-point stencil to a vector
 void apply_stencil3d(stencil3d const* S, double const* u, double* v)
 {
-	Timer t("stencil");
-	int nx = S->nx;
-	int ny = S->ny;
-	int nz = S->nz;
+	long nx = S->nx;
+	long ny = S->ny;
+	long nz = S->nz;
+	long n = nx*ny*nz;
+	Timer t("stencil", (6*n+7*n)/1e9, 2*n/1e9); //For all 7 loops we perform multiplication, for last 6 we add. We assume u and v are cached so we only read each of them once.
 #pragma omp parallel
 	{
 #pragma omp for schedule(static) 
