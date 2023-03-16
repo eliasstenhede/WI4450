@@ -88,7 +88,7 @@ void apply_stencil3d(stencil3d const* S, double const* u, double* v)
   	for (int iz=0; iz<nz-1; iz++) {
   	  for (int iy=0; iy<ny; iy++) {
   	    for (int ix=0; ix<nx; ix++) {
-          v[S->index_c(ix, iy, iz)] += S->value_b * u[S->index_b(ix, iy, iz)];
+          v[S->index_c(ix, iy, iz)] += S->value_t * u[S->index_t(ix, iy, iz)];
   		  }
   		}
   	}
@@ -96,7 +96,7 @@ void apply_stencil3d(stencil3d const* S, double const* u, double* v)
   	for (int iz=1; iz<nz; iz++) {
   	  for (int iy=0; iy<ny; iy++) {
   	    for (int ix=0; ix<nx; ix++) {
-          v[S->index_c(ix, iy, iz)] += S->value_t * u[S->index_t(ix, iy, iz)];
+          v[S->index_c(ix, iy, iz)] += S->value_b * u[S->index_b(ix, iy, iz)];
   		  }
   		}
   	}
