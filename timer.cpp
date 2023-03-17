@@ -47,7 +47,7 @@ void Timer::summarize(std::ostream& os)
 		std::cout << std::setw(14) << count;
 		std::cout << std::setw(14) << time;
 		std::cout << std::setw(14) << time/double(count);
-		std::cout << std::setw(14) << gflops;
+		std::cout << std::setw(14) << gflops/gbytes;
 		std::cout << std::setw(14) << gflops/time*double(count);
 		std::cout << std::setw(13) << gbytes/time*double(count);
 		std::cout << std::endl;
