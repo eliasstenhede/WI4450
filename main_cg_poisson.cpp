@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 {
   // initialize MPI. This always has to be called first
   // to set up the internal data structures of the library.
-  MPI_Init(&argc, &argv);
+  //MPI_Init(&argc, &argv);
   int nx, ny, nz;
 
   if      (argc==1) {nx=128;           ny=128;           nz=128;}
@@ -64,9 +64,9 @@ int main(int argc, char* argv[])
   if (nz<0) nz=nx;
 
   // create the domain decomposition
-  decomp3d DD(nx, ny, nz);
+  //decomp3d DD(nx, ny, nz);
 
-
+/*
   if (rank==0)
   {
     std::cout << "Domain decomposition:"<<std::endl;
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
   {
     if (rank==p) std::cout << "Local grid on P"<<rank<<": [<<DD.nx_loc <<" x "<< DD.ny_loc <<" x "<<DD.nz_loc << "]"<<std::endl;
     MPI_Barrier(MPI_COMM_WORLD);
-  }
+  }*/
 
   double dx=1.0/(nx-1), dy=1.0/(ny-1), dz=1.0/(nz-1);
 
@@ -88,11 +88,12 @@ int main(int argc, char* argv[])
   // The stencil needs to take the decomp3d object along
   // so that the offsets and neighbors can be determined
   // inside the apply function
-  L.DD=DD;
+  //L.DD=DD;
 
   // total number of unknowns on this process:
-  int nloc=L.DD.nx_loc*L.DD.ny_loc*L.DD.nz_loc;
+  //int nloc=L.DD.nx_loc*L.DD.ny_loc*L.DD.nz_loc;
 
+	long n = nx*ny*nz;
   // solution vector: start with a 0 vector
   double *x = new double[n];
   init(n, x, 0.0);
@@ -125,11 +126,11 @@ int main(int argc, char* argv[])
     }
 
   // solve the linear system of equations using CG
-  int numIter, maxIter=500;
+  int numIter, maxIter=30;
   double resNorm, tol=std::sqrt(std::numeric_limits<double>::epsilon());
 
   try {
-  cg_solver(&L, n, x, b, tol, maxIter, &resNorm, &numIter);
+  cg_solver(&L, n, x, b, tol, maxIter, &resNorm, &numIter, 0);
   } catch(std::exception e)
   {
     std::cerr << "Caught an exception in cg_solve: " << e.what() << std::endl;
@@ -141,6 +142,6 @@ int main(int argc, char* argv[])
   Timer::summarize();
 
   // no MPI calls must be issued after this one...
-  MPI_Finalize();
+  //MPI_Finalize();
   return 0;
 }
