@@ -8,13 +8,13 @@
 //////////////////////////////////
 
 // initialize a vector with a constant value, x[i] = value for 0<=i<n
-void init(int n, double* x, double value);
+void init(long n, double* x, double value);
 
 // scalar product: return sum_i x[i]*y[i] for 0<=i<n
-double dot(int n, double const* x, double const* y);
+double dot(long n, double const* x, double const* y);
 
 // vector update: compute y[i] = a*x[i] + b*y[i] for 0<=i<n
-void axpby(int n, double a, double const* x, double b, double* y);
+void axpby(long n, double a, double const* x, double b, double* y);
 
 //////////////////////////////////
 // Linear operator application  //
@@ -77,6 +77,5 @@ typedef struct stencil3d
 
 
 //! apply a 7-point stencil to a vector, v = op*x
-void apply_stencil3d(stencil3d const* op,
-        double const* u, double* v);
+void apply_stencil3d(stencil3d const* op, double const* u, double* v);
 
